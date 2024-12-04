@@ -1,11 +1,5 @@
 
-# from flask import Flask
 
-# app = Flask(__name__)
-
-# @app.route("/")
-# def home():
-#     return "Hello, Flask!"
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 
@@ -20,8 +14,12 @@ class Task(db.Model):
     status = db.Column(db.String(20), default="Pending")
 
 # Create tables within the application context
-with app.app_context():
-    db.create_all()
+# with app.app_context():
+#     db.create_all()
+
+
+VALID_STATUSES = ["Pending", "In Progress", "Completed"]
+
 
 # Routes
 @app.route('/tasks', methods=['GET'])
@@ -32,6 +30,14 @@ def get_tasks():
 @app.route('/tasks', methods=['POST'])
 def add_task():
     data = request.json
+
+    if 'title' not in data:
+        return jsonify({'error': 'Title is required'}), 400
+    
+    status = data.get('status', 'Pending')
+    if status not in VALID_STATUSES:
+        return jsonify({'error': 'Invalid status'}), 400
+    
     new_task = Task(title=data['title'])
     db.session.add(new_task)
     db.session.commit()
@@ -43,7 +49,12 @@ def update_task(id):
     task = Task.query.get(id)
     if not task:
         return jsonify({'error': 'Task not found'}), 404
-    task.status = data.get('status', task.status)
+    
+    status = data.get('status')
+    if status and status not in VALID_STATUSES:
+        return jsonify({'error': f'Invalid status. valis statuses are: {", ".join(VALID_STATUSES)}'}), 400
+    
+    task.status = status if status else task.status
     db.session.commit()
     return jsonify({'message': 'Task updated successfully'})
 
