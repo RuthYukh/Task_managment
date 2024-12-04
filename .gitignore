@@ -1,0 +1,13 @@
+# Ignore database files
+tasks.db
+
+# Ignore Python bytecode files
+*.pyc
+__pycache__/
+
+# Ignore virtual environment folder (if applicable)
+venv/
+
+# Ignore IDE specific files (optional)
+.vscode/
+.idea/
